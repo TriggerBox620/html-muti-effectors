@@ -50,7 +50,7 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
-      - name: 配置 Pages（enablement: true 可在首次运行时自动开启 Pages）
+      - name: 配置 Pages（enablement 自动开启 Pages）
         uses: actions/configure-pages@v5
         with:
           enablement: true      # 自动开启 Pages（需仓库管理员权限的 GITHUB_TOKEN）
