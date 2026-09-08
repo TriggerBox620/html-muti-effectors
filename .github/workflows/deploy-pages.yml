@@ -3,7 +3,7 @@
 # 触发：推送到 main 分支 / 手动运行(workflow_dispatch)
 # 效果：先在 Node 上跑回归测试 tests/smoke.test.js，通过后
 #       把仓库根目录作为静态站点发布到 GitHub Pages。
-# 前置（一次性，仓库设置里操作）：
+# 前置（一次性，可选——已开启 enablement: true 自动开启）：
 #   Settings → Pages → Source 选 “GitHub Actions” 并保存
 # 上线地址：https://<用户名>.github.io/<仓库名>/
 # ============================================================
@@ -50,8 +50,10 @@ jobs:
       - name: 检出代码
         uses: actions/checkout@v4
 
-      - name: 配置 Pages
+      - name: 配置 Pages（enablement: true 可在首次运行时自动开启 Pages）
         uses: actions/configure-pages@v5
+        with:
+          enablement: true      # 自动开启 Pages（需仓库管理员权限的 GITHUB_TOKEN）
 
       - name: 上传站点产物（整仓根目录即静态站根目录）
         uses: actions/upload-pages-artifact@v3
