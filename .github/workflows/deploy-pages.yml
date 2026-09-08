@@ -1,0 +1,63 @@
+# ============================================================
+# GitHub Pages 自动部署（Actions 官方工作流）
+# 触发：推送到 main 分支 / 手动运行(workflow_dispatch)
+# 效果：先在 Node 上跑回归测试 tests/smoke.test.js，通过后
+#       把仓库根目录作为静态站点发布到 GitHub Pages。
+# 前置（一次性，仓库设置里操作）：
+#   Settings → Pages → Source 选 “GitHub Actions” 并保存
+# 上线地址：https://<用户名>.github.io/<仓库名>/
+# ============================================================
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:          # 支持在 Actions 页手动触发
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  # ---- 1. 回归测试（可选但推荐：保证推上去的版本是健康的）----
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 运行冒烟测试（纯 Node，无需依赖安装）
+        run: node tests/smoke.test.js
+
+  # ---- 2. 发布到 GitHub Pages ----
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 配置 Pages
+        uses: actions/configure-pages@v5
+
+      - name: 上传站点产物（整仓根目录即静态站根目录）
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: 部署到 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
